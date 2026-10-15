@@ -3,6 +3,7 @@
 # add it to the feed JSON and push the feed.
 # Usage: release.sh <feed> <zip>
 #   e.g. release.sh lineage-22.2-4.19 ~/lineage-22.2-20261016-UNOFFICIAL-a9y18qlte.zip
+# The release is tagged <feed>-<yyyymmdd>-<HHMM> from the build time (UTC).
 set -e
 FEED=${1:?usage: release.sh <feed> <zip>}
 ZIP=${2:?usage: release.sh <feed> <zip>}
@@ -10,10 +11,12 @@ REPO=a9y18qlte-open/OTA
 cd "$(dirname "$0")"
 
 NAME=$(basename "$ZIP")
-DATE=$(echo "$NAME" | grep -oE '[0-9]{8}' | head -1)
-[ -n "$DATE" ] || { echo "$NAME: no yyyymmdd in the file name" >&2; exit 1; }
 DEVICE=$(echo "$NAME" | sed -E 's/.*-(UNOFFICIAL|OFFICIAL|NIGHTLY|EXPERIMENTAL)-(.+)\.zip$/\2/')
-TAG="$FEED-$DATE"
+# Tag by build time, not the file name's date: builds of the same day have
+# the same file name, and must not replace each other's asset
+STAMP=$(unzip -p "$ZIP" META-INF/com/android/metadata | sed -n 's/^post-timestamp=//p')
+[ -n "$STAMP" ] || { echo "$NAME: no post-timestamp in the zip metadata" >&2; exit 1; }
+TAG="$FEED-$(date -u -d "@$STAMP" +%Y%m%d-%H%M)"
 URL="https://github.com/$REPO/releases/download/$TAG/$NAME"
 
 git pull -q --ff-only
