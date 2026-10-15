@@ -2,12 +2,32 @@
 # Publish a build to an OTA feed: upload the zip as a GitHub release asset,
 # add it to the feed JSON and push the feed.
 # Usage: release.sh <feed> <zip>
-#   e.g. release.sh lineage-22.2-4.19 ~/lineage-22.2-20261016-UNOFFICIAL-a9y18qlte.zip
+#        release.sh <feed> <build log> <source tree>
+#   e.g. release.sh lineage-22.2-4.19 ~/build_lineage22.log ~/lineage-20
+# With a build log, the zip is the one its last "Package Complete:" line
+# names. bacon hardlinks the OTA package to the zip name of each build, so
+# the zips of earlier builds hold the newest build too, under their old names.
 # The release is tagged <feed>-<yyyymmdd>-<HHMM> from the build time (UTC).
 set -e
-FEED=${1:?usage: release.sh <feed> <zip>}
-ZIP=${2:?usage: release.sh <feed> <zip>}
+USAGE="usage: release.sh <feed> <zip> | <feed> <build log> <source tree>"
+FEED=${1:?$USAGE}
+ZIP=${2:?$USAGE}
 REPO=a9y18qlte-open/OTA
+
+case "$ZIP" in
+*.zip) ;;
+*)
+	LOG=$ZIP
+	ZIP=$(grep -a -o 'Package Complete: .*' "$LOG" | tail -n 1 | sed 's/^Package Complete: //; s/\r$//')
+	[ -n "$ZIP" ] || { echo "$LOG: no \"Package Complete:\" line" >&2; exit 1; }
+	case "$ZIP" in
+	/*) ;;
+	*) ZIP="${3:?$USAGE}/$ZIP" ;;
+	esac
+	;;
+esac
+[ -f "$ZIP" ] || { echo "$ZIP: not found" >&2; exit 1; }
+ZIP=$(realpath "$ZIP")
 cd "$(dirname "$0")"
 
 NAME=$(basename "$ZIP")

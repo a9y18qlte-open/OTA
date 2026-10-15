@@ -14,10 +14,16 @@ from the build time (UTC).
 ## Adding a build
 
 ```
-./release.sh lineage-22.2-4.19 <zip>
+./release.sh lineage-22.2-4.19 <build log> <source tree>
 ```
 
-`release.sh` uploads the zip as the asset of release `<feed>-<yyyymmdd>-<HHMM>`
+`release.sh` publishes the zip that the build log's last `Package Complete:`
+line names. Every build rewrites the OTA package in place, and the zips of
+earlier builds are hardlinks to it, so the newest zip in the output directory
+can carry an earlier build's name. A zip can also be given directly:
+`./release.sh lineage-22.2-4.19 <zip>`.
+
+It uploads the zip as the asset of release `<feed>-<yyyymmdd>-<HHMM>`
 (using `gh`), checks that it downloads, adds it to the feed and pushes. To
 only update a feed by hand:
 
