@@ -13,6 +13,14 @@ zip is a release asset of this repository, tagged `<feed>-<yyyymmdd>`.
 ## Adding a build
 
 ```
+./release.sh lineage-22.2-4.19 <zip>
+```
+
+`release.sh` uploads the zip as the asset of release `<feed>-<yyyymmdd>`
+(using `gh`), checks that it downloads, adds it to the feed and pushes. To
+only update a feed by hand:
+
+```
 python3 ota_json.py <zip> lineage-22.2-4.19/a9y18qlte.json \
     https://github.com/a9y18qlte-open/OTA/releases/download/<tag>/<zip name>
 ```
