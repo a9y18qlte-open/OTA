@@ -3,7 +3,7 @@
 # add it to the feed JSON and push the feed.
 # Usage: release.sh <feed> <zip>
 #        release.sh <feed> <build log> <source tree>
-#   e.g. release.sh lineage-22.2-4.19 ~/build_lineage22.log ~/lineage-20
+#   e.g. release.sh lineage-22.2 ~/build_lineage22.log ~/lineage-20
 # With a build log, the zip is the one its last "Package Complete:" line
 # names. bacon hardlinks the OTA package to the zip name of each build, so
 # the zips of earlier builds hold the newest build too, under their old names.

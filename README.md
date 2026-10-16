@@ -5,7 +5,13 @@ Samsung Galaxy A9 (2018) (`a9y18qlte`).
 
 | Feed | Builds |
 |---|---|
+| `lineage-22.2/a9y18qlte.json` | LineageOS 22.2 (main feed, 4.4 kernel) |
 | `lineage-22.2-4.19/a9y18qlte.json` | LineageOS 22.2 on the 4.19 kernel |
+
+`lineage-22.2` is the main feed, for builds of the `lineage-22.2` device
+branch. `lineage-22.2-4.19` serves the 4.19 branch until that branch is merged
+into `lineage-22.2`; after the merge, the merged branch keeps the main feed's
+URI and its builds are published to `lineage-22.2`.
 
 Builds point the Updater at their feed with `lineage.updater.uri`. Each build
 zip is a release asset of this repository, tagged `<feed>-<yyyymmdd>-<HHMM>`
@@ -14,21 +20,21 @@ from the build time (UTC).
 ## Adding a build
 
 ```
-./release.sh lineage-22.2-4.19 <build log> <source tree>
+./release.sh lineage-22.2 <build log> <source tree>
 ```
 
 `release.sh` publishes the zip that the build log's last `Package Complete:`
 line names. Every build rewrites the OTA package in place, and the zips of
 earlier builds are hardlinks to it, so the newest zip in the output directory
 can carry an earlier build's name. A zip can also be given directly:
-`./release.sh lineage-22.2-4.19 <zip>`.
+`./release.sh lineage-22.2 <zip>`.
 
 It uploads the zip as the asset of release `<feed>-<yyyymmdd>-<HHMM>`
 (using `gh`), checks that it downloads, adds it to the feed and pushes. To
 only update a feed by hand:
 
 ```
-python3 ota_json.py <zip> lineage-22.2-4.19/a9y18qlte.json \
+python3 ota_json.py <zip> lineage-22.2/a9y18qlte.json \
     https://github.com/a9y18qlte-open/OTA/releases/download/<tag>/<zip name>
 ```
 
