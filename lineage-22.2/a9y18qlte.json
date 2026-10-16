@@ -1,3 +1,13 @@
 {
-  "response": []
+  "response": [
+    {
+      "datetime": 1792115824,
+      "filename": "lineage-22.2-20261016-UNOFFICIAL-a9y18qlte.zip",
+      "id": "25a234c977b5fdcc9a3cb9f3e5f9dd28b105a39ef2de312254ed862fffca6343",
+      "romtype": "UNOFFICIAL",
+      "size": 1082369601,
+      "url": "https://github.com/a9y18qlte-open/OTA/releases/download/lineage-22.2-20261016-0157/lineage-22.2-20261016-UNOFFICIAL-a9y18qlte.zip",
+      "version": "22.2"
+    }
+  ]
 }
