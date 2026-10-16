@@ -9,9 +9,10 @@ Samsung Galaxy A9 (2018) (`a9y18qlte`).
 | `lineage-22.2-4.19/a9y18qlte.json` | LineageOS 22.2 on the 4.19 kernel |
 
 `lineage-22.2` is the main feed, for builds of the `lineage-22.2` device
-branch. `lineage-22.2-4.19` serves the 4.19 branch until that branch is merged
-into `lineage-22.2`; after the merge, the merged branch keeps the main feed's
-URI and its builds are published to `lineage-22.2`.
+branch (4.4 kernel). The 4.19 builds have their own feed for now. Once they
+are stable, the 4.19 branch points its `lineage.updater.uri` at
+`lineage-22.2` too and its builds are published there, so both kernels update
+from the same feed.
 
 Builds point the Updater at their feed with `lineage.updater.uri`. Each build
 zip is a release asset of this repository, tagged `<feed>-<yyyymmdd>-<HHMM>`
