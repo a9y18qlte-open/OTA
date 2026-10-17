@@ -7,6 +7,11 @@ usage: ota_json.py <zip> <json> <url>
 build timestamp (post-timestamp in META-INF/com/android/metadata, which is
 ro.build.date.utc), its SHA-256 as the id, its size, and the version and
 release type from the file name (lineage-<version>-<date>-<type>-<device>.zip).
+The Updater lists builds as "LineageOS <version>" with only the date, so the
+version gets the build time (UTC, matching the shown date) to tell builds of
+one day apart: "22.2.0 (19:52 UTC)". The Updater parses the version as
+<major>.<minor> by splitting at dots, so the ".0" keeps the minor a plain
+number; "22.2 (19:52 UTC)" would make the build uninstallable.
 An entry with the same id is replaced; entries are kept newest first.
 """
 import hashlib
@@ -14,6 +19,7 @@ import json
 import os
 import re
 import sys
+import time
 import zipfile
 
 
@@ -45,7 +51,7 @@ def main():
         'romtype': romtype,
         'size': os.path.getsize(zip_path),
         'url': url,
-        'version': version,
+        'version': f'{version}.0 ({time.strftime("%H:%M", time.gmtime(datetime))} UTC)',
     }
 
     data = {'response': []}
