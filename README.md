@@ -7,6 +7,7 @@ Samsung Galaxy A9 (2018) (`a9y18qlte`).
 |---|---|
 | `lineage-22.2/a9y18qlte.json` | LineageOS 22.2 (main feed, 4.4 kernel) |
 | `lineage-22.2-4.19/a9y18qlte.json` | LineageOS 22.2 on the 4.19 kernel |
+| `lineage-23.2/a9y18qlte.json` | LineageOS 23.2 (4.19 kernel) |
 
 `lineage-22.2` is the main feed, for builds of the `lineage-22.2` device
 branch (4.4 kernel). The 4.19 builds have their own feed for now. Once they
