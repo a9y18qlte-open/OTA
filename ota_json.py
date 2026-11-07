@@ -24,9 +24,10 @@ import zipfile
 
 
 def main():
-    if len(sys.argv) != 4:
+    if len(sys.argv) not in (4, 5):
         sys.exit(__doc__)
-    zip_path, json_path, url = sys.argv[1:]
+    zip_path, json_path, url = sys.argv[1:4]
+    custom_version = sys.argv[4] if len(sys.argv) == 5 else None
     filename = os.path.basename(url)
 
     m = re.match(r'lineage-([0-9.]+)-\d{8}-([A-Z]+)-(.+)\.zip$', filename)
@@ -51,7 +52,7 @@ def main():
         'romtype': romtype,
         'size': os.path.getsize(zip_path),
         'url': url,
-        'version': f'{version}.0 ({time.strftime("%H:%M", time.gmtime(datetime))} UTC)',
+        'version': custom_version if custom_version else f'{version}.0 ({time.strftime("%H:%M", time.gmtime(datetime))} UTC)',
     }
 
     data = {'response': []}
