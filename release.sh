@@ -128,6 +128,9 @@ EOF
 for extra in "${EXTRA_ASSETS[@]}"; do
 	if [ -f "$extra" ]; then
 		case "$(basename "$extra")" in
+		*BakaSU*)
+			echo "- \`$(basename "$extra")\`: BakaSU + SUSFS v2.3.0 AnyKernel3 installer for Linux 4.4" >> "$NOTES_TMP"
+			;;
 		*KernelSU*|*AnyKernel3*)
 			echo "- \`$(basename "$extra")\`: KernelSU-Next AnyKernel3 installer for Linux 4.4" >> "$NOTES_TMP"
 			;;
