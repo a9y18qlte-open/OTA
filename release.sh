@@ -32,8 +32,27 @@ cd "$(dirname "$0")"
 
 NAME=$(basename "$ZIP")
 DEVICE=$(echo "$NAME" | sed -E 's/.*-(UNOFFICIAL|OFFICIAL|NIGHTLY|EXPERIMENTAL)-(.+)\.zip$/\2/')
-STAMP=$(unzip -p "$ZIP" META-INF/com/android/metadata | sed -n 's/^post-timestamp=//p')
+
+# Extract metadata from the OTA package
+META=$(unzip -p "$ZIP" META-INF/com/android/metadata 2>/dev/null || true)
+STAMP=$(echo "$META" | sed -n 's/^post-timestamp=//p')
 [ -n "$STAMP" ] || { echo "$NAME: no post-timestamp in the zip metadata" >&2; exit 1; }
+
+SDK_LEVEL=$(echo "$META" | sed -n 's/^post-sdk-level=//p')
+SEC_PATCH=$(echo "$META" | sed -n 's/^post-security-patch-level=//p')
+
+case "$SDK_LEVEL" in
+36) ANDROID_VER="16" ;;
+35) ANDROID_VER="15" ;;
+34) ANDROID_VER="14" ;;
+*)
+	case "$FEED" in
+	lineage-23*) ANDROID_VER="16" ;;
+	lineage-22*) ANDROID_VER="15" ;;
+	*) ANDROID_VER="$SDK_LEVEL" ;;
+	esac
+	;;
+esac
 
 SRC_TREE="${SRC_DIR:-${SRC:-/home/thongnguyen1809/lineage-22}}"
 [ -d "$SRC_TREE" ] || SRC_TREE="$HOME/lineage-22"
@@ -78,8 +97,14 @@ cat > "$NOTES_TMP" << EOF
 
 - **ROM Version**: \`${VERSION_STR:-$FEED_VER}\`
 - **Build Date**: $(date -u -d "@$STAMP" +%Y-%m-%d)
-- **Android Version**: 15 (VanillaIceCream)
-- **Security Patch**: 2026-10-01
+- **Android Version**: $ANDROID_VER
+EOF
+
+if [ -n "$SEC_PATCH" ]; then
+	echo "- **Security Patch**: $SEC_PATCH" >> "$NOTES_TMP"
+fi
+
+cat >> "$NOTES_TMP" << EOF
 
 ### Source Repositories
 EOF
