@@ -97,6 +97,8 @@ cat > "$NOTES_TMP" << EOF
 
 - **ROM Version**: \`${VERSION_STR:-$FEED_VER}\`
 - **Build Date**: $(date -u -d "@$STAMP" +%Y-%m-%d)
+- **Build Time**: $(date -u -d "@$STAMP" '+%H:%M:%S UTC')
+- **Build UTC Timestamp**: \`$STAMP\`
 - **Android Version**: $ANDROID_VER
 EOF
 
