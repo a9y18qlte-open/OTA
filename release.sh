@@ -30,6 +30,8 @@ esac
 ZIP=$(realpath "$ZIP")
 cd "$(dirname "$0")"
 
+git pull -q --ff-only
+
 NAME=$(basename "$ZIP")
 DEVICE=$(echo "$NAME" | sed -E 's/.*-(UNOFFICIAL|OFFICIAL|NIGHTLY|EXPERIMENTAL)-(.+)\.zip$/\2/')
 
@@ -54,8 +56,22 @@ case "$SDK_LEVEL" in
 	;;
 esac
 
-SRC_TREE="${SRC_DIR:-${SRC:-/home/thongnguyen1809/lineage-22}}"
-[ -d "$SRC_TREE" ] || SRC_TREE="$HOME/lineage-22"
+case "$FEED" in
+lineage-23*)
+	SRC_DEFAULT="/home/thongnguyen1809/lineage-23.2"
+	[ -d "$SRC_DEFAULT" ] || SRC_DEFAULT="/mnt/disks/extra/trees/lineage-23.2"
+	;;
+lineage-22*)
+	SRC_DEFAULT="/home/thongnguyen1809/lineage-22.2"
+	[ -d "$SRC_DEFAULT" ] || SRC_DEFAULT="/home/thongnguyen1809/lineage-22"
+	;;
+*)
+	SRC_DEFAULT="/home/thongnguyen1809/lineage-22"
+	;;
+esac
+
+SRC_TREE="${SRC_DIR:-${SRC:-$SRC_DEFAULT}}"
+[ -d "$SRC_TREE" ] || SRC_TREE="$SRC_DEFAULT"
 
 DEV_REPO="$SRC_TREE/device/samsung/$DEVICE"
 KERNEL_REPO="$SRC_TREE/kernel/samsung/$DEVICE"
@@ -82,9 +98,62 @@ if [ -d "$VENDOR_REPO/.git" ]; then
 fi
 
 FEED_VER=$(echo "$FEED" | sed 's/^lineage-//')
+JSON_FILE="$FEED/$DEVICE.json"
+
+ZIP_SHA=$(sha256sum "$ZIP" | awk '{print $1}')
+
 if [ -n "$DEV_HASH" ]; then
-	TAG="$FEED-$(date -u -d "@$STAMP" +%Y%m%d)-${DEV_HASH}"
-	VERSION_STR="${FEED_VER}.${DEV_HASH}"
+	BASE_VER="${FEED_VER}.${DEV_HASH}"
+	BASE_TAG="$FEED-$(date -u -d "@$STAMP" +%Y%m%d)-${DEV_HASH}"
+
+	IDX=1
+	while true; do
+		if [ $IDX -eq 1 ]; then
+			CUR_VER="$BASE_VER"
+			CUR_TAG="$BASE_TAG"
+		else
+			CUR_VER="${BASE_VER}-${IDX}"
+			CUR_TAG="${BASE_TAG}-${IDX}"
+		fi
+
+		COLLISION=false
+		if [ -f "$JSON_FILE" ]; then
+			if python3 -c "
+import json, sys
+data = json.load(open('$JSON_FILE'))
+target_ver = '$CUR_VER'
+zip_id = '$ZIP_SHA'
+for b in data.get('response', []):
+    if b.get('version') == target_ver and b.get('id') != zip_id:
+        sys.exit(1)
+sys.exit(0)
+" 2>/dev/null; then
+				:
+			else
+				COLLISION=true
+			fi
+		fi
+
+		if [ "$COLLISION" = false ]; then
+			if gh release view "$CUR_TAG" -R "$REPO" >/dev/null 2>&1; then
+				ZIP_SIZE=$(stat -c %s "$ZIP")
+				GH_ASSET_SIZE=$(gh release view "$CUR_TAG" -R "$REPO" --json assets -q ".assets[] | select(.name==\"$NAME\") | .size" 2>/dev/null || true)
+				if [ -n "$GH_ASSET_SIZE" ] && [ "$GH_ASSET_SIZE" -eq "$ZIP_SIZE" ]; then
+					COLLISION=false
+				else
+					COLLISION=true
+				fi
+			fi
+		fi
+
+		if [ "$COLLISION" = true ]; then
+			IDX=$((IDX + 1))
+		else
+			VERSION_STR="$CUR_VER"
+			TAG="$CUR_TAG"
+			break
+		fi
+	done
 else
 	TAG="$FEED-$(date -u -d "@$STAMP" +%Y%m%d-%H%M)"
 	VERSION_STR=""
@@ -130,6 +199,10 @@ EOF
 for extra in "${EXTRA_ASSETS[@]}"; do
 	if [ -f "$extra" ]; then
 		case "$(basename "$extra")" in
+		*BakaSU*4.19*)
+			echo "- \`$(basename "$extra")\`: BakaSU + SUSFS v2.3.0 AnyKernel3 installer for Linux 4.19" >> "$NOTES_TMP"
+			echo "  - **BakaSU Manager**: [Download (\`Manager-release.zip\`)](https://nightly.link/Baka-SU/BakaSU/workflows/build-manager/main/Manager-release.zip) | [Telegram](https://t.me/BakaSU_Grp/4)" >> "$NOTES_TMP"
+			;;
 		*BakaSU*)
 			echo "- \`$(basename "$extra")\`: BakaSU + SUSFS v2.3.0 AnyKernel3 installer for Linux 4.4" >> "$NOTES_TMP"
 			echo "  - **BakaSU Manager**: [Download (\`Manager-release.zip\`)](https://nightly.link/Baka-SU/BakaSU/workflows/build-manager/main/Manager-release.zip) | [Telegram](https://t.me/BakaSU_Grp/4)" >> "$NOTES_TMP"
