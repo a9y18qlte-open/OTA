@@ -84,15 +84,15 @@ KERNEL_FULL=""
 VENDOR_HASH=""
 VENDOR_FULL=""
 
-if [ -d "$DEV_REPO/.git" ]; then
+if [ -e "$DEV_REPO/.git" ]; then
 	DEV_HASH=$(git -C "$DEV_REPO" rev-parse --short HEAD 2>/dev/null || true)
 	DEV_FULL=$(git -C "$DEV_REPO" rev-parse HEAD 2>/dev/null || true)
 fi
-if [ -d "$KERNEL_REPO/.git" ]; then
+if [ -e "$KERNEL_REPO/.git" ]; then
 	KERNEL_HASH=$(git -C "$KERNEL_REPO" rev-parse --short HEAD 2>/dev/null || true)
 	KERNEL_FULL=$(git -C "$KERNEL_REPO" rev-parse HEAD 2>/dev/null || true)
 fi
-if [ -d "$VENDOR_REPO/.git" ]; then
+if [ -e "$VENDOR_REPO/.git" ]; then
 	VENDOR_HASH=$(git -C "$VENDOR_REPO" rev-parse --short HEAD 2>/dev/null || true)
 	VENDOR_FULL=$(git -C "$VENDOR_REPO" rev-parse HEAD 2>/dev/null || true)
 fi
