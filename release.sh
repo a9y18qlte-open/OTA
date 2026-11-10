@@ -235,7 +235,16 @@ for extra in "${EXTRA_ASSETS[@]}"; do
 done
 
 # The feed must only list a build once its download works
-curl -sfIL -o /dev/null "$URL" || { echo "$URL is not downloadable" >&2; exit 1; }
+for i in {1..10}; do
+	if curl -sfIL -o /dev/null "$URL"; then
+		break
+	fi
+	if [ $i -eq 10 ]; then
+		echo "$URL is not downloadable" >&2
+		exit 1
+	fi
+	sleep 2
+done
 
 if [ -n "$VERSION_STR" ]; then
 	python3 -I ota_json.py "$ZIP" "$FEED/$DEVICE.json" "$URL" "$VERSION_STR"
