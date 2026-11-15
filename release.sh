@@ -1,10 +1,17 @@
 #!/bin/bash
 # Publish a build to an OTA feed: upload the zip as a GitHub release asset,
 # add it to the feed JSON and push the feed.
-# Usage: release.sh <feed> <zip> [extra_assets...]
-#        release.sh <feed> <build log> <source tree>
+# Usage: release.sh [--draft] <feed> <zip> [extra_assets...]
+#        release.sh [--draft] <feed> <build log> <source tree>
 set -e
-USAGE="usage: release.sh <feed> <zip> [extra_assets...] | <feed> <build log> <source tree>"
+
+IS_DRAFT=false
+if [ "${1:-}" = "--draft" ]; then
+	IS_DRAFT=true
+	shift
+fi
+
+USAGE="usage: release.sh [--draft] <feed> <zip> [extra_assets...] | <feed> <build log> <source tree>"
 FEED=${1:?$USAGE}
 ZIP=${2:?$USAGE}
 REPO=a9y18qlte-open/OTA
@@ -219,11 +226,14 @@ done
 
 git pull -q --ff-only
 
+CREATE_FLAGS=()
+$IS_DRAFT && CREATE_FLAGS+=(--draft)
+
 if gh release view "$TAG" -R "$REPO" >/dev/null 2>&1; then
 	gh release upload "$TAG" "$ZIP" -R "$REPO" --clobber
-	gh release edit "$TAG" -R "$REPO" --notes-file "$NOTES_TMP"
+	gh release edit "$TAG" -R "$REPO" --notes-file "$NOTES_TMP" "${CREATE_FLAGS[@]}"
 else
-	gh release create "$TAG" "$ZIP" -R "$REPO" --title "$TAG" --notes-file "$NOTES_TMP"
+	gh release create "$TAG" "$ZIP" -R "$REPO" --title "$TAG" --notes-file "$NOTES_TMP" "${CREATE_FLAGS[@]}"
 fi
 rm -f "$NOTES_TMP"
 
@@ -233,6 +243,12 @@ for extra in "${EXTRA_ASSETS[@]}"; do
 		gh release upload "$TAG" "$extra" -R "$REPO" --clobber
 	fi
 done
+
+if $IS_DRAFT; then
+	echo "Draft release created: $TAG (skipped updating $FEED/$DEVICE.json feed for draft release)"
+	echo "To promote to live OTA update, run: ./publish_draft.sh $TAG"
+	exit 0
+fi
 
 # The feed must only list a build once its download works
 for i in {1..10}; do

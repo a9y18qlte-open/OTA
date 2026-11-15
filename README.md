@@ -45,6 +45,7 @@ Each release is tagged as:
 
 ## Publishing Builds
 
+### Public Release (Immediate OTA Update)
 ```bash
 ./release.sh <feed> <zip> [extra_assets...]
 # e.g.:
@@ -58,6 +59,30 @@ Each release is tagged as:
 4. Verifies asset availability.
 5. Updates the device feed JSON with the `<major>.<minor>.<device_hash>` version and pushes to `main`.
 
+### Testing / Draft Release
+For builds currently under testing that should **not** appear immediately in users' OTA updater apps:
+```bash
+./release.sh --draft <feed> <zip> [extra_assets...]
+```
+- Creates a **GitHub Draft Release** and uploads the ROM zip and companion AnyKernel3/BakaSU assets.
+- **Skips** updating the public feed JSON (`<feed>/<device>.json`), preventing users' updater apps from seeing unverified builds or getting 404 errors.
+- Testers with repo permissions can download assets directly from the GitHub Releases tab.
+
+### Promoting a Draft to Live OTA Update
+Once testing is finished and the build is approved for all users:
+```bash
+./publish_draft.sh <release-tag>
+# e.g.:
+./publish_draft.sh lineage-23.2-20261115-d01e141
+```
+This will:
+1. Undraft the GitHub release (making assets publicly downloadable without authentication).
+2. Read the release metadata and automatically populate the corresponding `<feed>/<device>.json`.
+3. Commit and push the feed to `main`, making the update instantly visible in **Settings → System → Updates**.
+
+---
+
+## Manual JSON Update
 To update the JSON feed manually:
 ```bash
 python3 ota_json.py <zip> <feed>/<device>.json <download_url> [version_override]
