@@ -3,7 +3,8 @@
 # Usage: ./publish_draft.sh <release-tag>
 set -euo pipefail
 
-TAG="${1:?usage: publish_draft.sh <release-tag>}"
+TAG="${1:?usage: publish_draft.sh <release-tag> [local-zip]}"
+LOCAL_ZIP_ARG="${2:-${LOCAL_ZIP:-}}"
 REPO="a9y18qlte-open/OTA"
 
 cd "$(dirname "$0")"
@@ -61,9 +62,16 @@ for i in {1..15}; do
 done
 
 # Download zip headers or inspect metadata to extract version / properties
-TMP_ZIP="/tmp/ota_inspect_$$.zip"
-echo ">>> Fetching zip metadata from release..."
-gh release download "$TAG" -R "$REPO" -p "$ROM_NAME" -O "$TMP_ZIP"
+CLEANUP_ZIP=false
+if [ -n "$LOCAL_ZIP_ARG" ] && [ -f "$LOCAL_ZIP_ARG" ]; then
+    TMP_ZIP="$LOCAL_ZIP_ARG"
+    echo ">>> Using existing local zip for metadata: $TMP_ZIP"
+else
+    TMP_ZIP="/tmp/ota_inspect_$$.zip"
+    echo ">>> Fetching zip metadata from release..."
+    gh release download "$TAG" -R "$REPO" -p "$ROM_NAME" -O "$TMP_ZIP"
+    CLEANUP_ZIP=true
+fi
 
 DEV_HASH=$(echo "$TAG" | awk -F'-' '{print $NF}')
 FEED_VER=$(echo "$FEED" | sed 's/^lineage-//')
@@ -77,7 +85,7 @@ if [ -n "$VERSION_STR" ]; then
 else
     python3 -I ota_json.py "$TMP_ZIP" "$JSON_FILE" "$ROM_URL"
 fi
-rm -f "$TMP_ZIP"
+[ "$CLEANUP_ZIP" = "true" ] && rm -f "$TMP_ZIP"
 
 git add "$JSON_FILE"
 git commit -m "$FEED: Promote $TAG to live OTA feed"
