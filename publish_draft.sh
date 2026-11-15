@@ -17,6 +17,8 @@ IS_DRAFT=$(echo "$RELEASE_JSON" | python3 -c "import sys, json; print(json.load(
 if [ "$IS_DRAFT" = "True" ] || [ "$IS_DRAFT" = "true" ]; then
     echo ">>> Undrafting GitHub release $TAG..."
     gh release edit "$TAG" -R "$REPO" --draft=false
+    # Re-fetch release info after undrafting so asset URLs reflect public release tag
+    RELEASE_JSON=$(gh release view "$TAG" -R "$REPO" --json tagName,isDraft,assets,body)
 else
     echo ">>> Release $TAG is already public."
 fi
