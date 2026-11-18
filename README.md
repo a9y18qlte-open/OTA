@@ -7,6 +7,7 @@ Update feeds for the LineageOS Updater (Settings → System → Updates) on the 
 | `lineage-22.2/a9y18qlte.json` | LineageOS 22.2 (Android 15, Linux 4.4 kernel) |
 | `lineage-22.2-4.19/a9y18qlte.json` | LineageOS 22.2 on Linux 4.19 kernel |
 | `lineage-23.2/a9y18qlte.json` | LineageOS 23.2 (Android 16, Linux 4.19 kernel) |
+| `lineage-24.0/a9y18qlte.json` | LineageOS 24.0 (Android 17) |
 
 ---
 
