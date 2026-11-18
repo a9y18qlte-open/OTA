@@ -197,6 +197,36 @@ if [ -n "$VENDOR_HASH" ]; then
 	echo "- **Vendor Tree**: [\`$VENDOR_HASH\`](https://github.com/a9y18qlte-open/android_vendor_samsung_$DEVICE/commit/$VENDOR_FULL)" >> "$NOTES_TMP"
 fi
 
+# Changelog since the previous published (non-draft) release of this feed (its notes link the full SHAs)
+PREV_TAG=$(gh release list -R "$REPO" -L 50 --json tagName,isDraft -q '.[] | select(.isDraft | not) | .tagName' 2>/dev/null |
+	grep -E "^$FEED-[0-9]{8}" | grep -vxF "$TAG" | head -n 1 || true)
+PREV_NOTES=""
+[ -n "$PREV_TAG" ] && PREV_NOTES=$(gh release view "$PREV_TAG" -R "$REPO" --json body -q .body 2>/dev/null || true)
+
+changelog() { # <title> <repo dir> <github repo name> <new full sha>
+	local old log
+	[ -n "$4" ] || return 0
+	old=$(echo "$PREV_NOTES" | grep -o "android_$3/commit/[0-9a-f]\{40\}" | head -n 1 | sed 's|.*/||')
+	[ -n "$old" ] || return 0
+	echo "" >> "$NOTES_TMP"
+	echo "#### $1" >> "$NOTES_TMP"
+	if [ "$old" = "$4" ]; then
+		echo "No changes since \`$PREV_TAG\`." >> "$NOTES_TMP"
+	elif log=$(git -C "$2" log --no-merges --format='- `%h` - %s' "$old..$4" 2>/dev/null | head -n 100) && [ -n "$log" ]; then
+		echo "$log" >> "$NOTES_TMP"
+	else
+		echo "Not available (\`${old:0:9}\` is not an ancestor of the build)." >> "$NOTES_TMP"
+	fi
+}
+
+if [ -n "$PREV_NOTES" ]; then
+	echo "" >> "$NOTES_TMP"
+	echo "### Changelog since \`$PREV_TAG\`" >> "$NOTES_TMP"
+	changelog "Device Tree" "$DEV_REPO" "device_samsung_$DEVICE" "$DEV_FULL"
+	changelog "Kernel Tree" "$KERNEL_REPO" "kernel_samsung_$DEVICE" "$KERNEL_FULL"
+	changelog "Vendor Tree" "$VENDOR_REPO" "vendor_samsung_$DEVICE" "$VENDOR_FULL"
+fi
+
 cat >> "$NOTES_TMP" << EOF
 
 ### Assets
