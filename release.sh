@@ -51,11 +51,13 @@ SDK_LEVEL=$(echo "$META" | sed -n 's/^post-sdk-level=//p')
 SEC_PATCH=$(echo "$META" | sed -n 's/^post-security-patch-level=//p')
 
 case "$SDK_LEVEL" in
+37) ANDROID_VER="17" ;;
 36) ANDROID_VER="16" ;;
 35) ANDROID_VER="15" ;;
 34) ANDROID_VER="14" ;;
 *)
 	case "$FEED" in
+	lineage-24*) ANDROID_VER="17" ;;
 	lineage-23*) ANDROID_VER="16" ;;
 	lineage-22*) ANDROID_VER="15" ;;
 	*) ANDROID_VER="$SDK_LEVEL" ;;
@@ -64,6 +66,9 @@ case "$SDK_LEVEL" in
 esac
 
 case "$FEED" in
+lineage-24*)
+	SRC_DEFAULT="/home/thongnguyen1809/lineage-24.0"
+	;;
 lineage-23*)
 	SRC_DEFAULT="/home/thongnguyen1809/lineage-23.2"
 	[ -d "$SRC_DEFAULT" ] || SRC_DEFAULT="/mnt/disks/extra/trees/lineage-23.2"
