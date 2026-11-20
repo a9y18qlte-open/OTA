@@ -9,7 +9,8 @@
         "sha256": "574c7e3feb4732e41f62adf54364a3c8a75b7c69ab6a7f9222c12b626fed40e6",
         "size": 1143795884,
         "url": "https://github.com/a9y18qlte-open/OTA/releases/download/lineage-23.2-20261120-86b78e7/lineage-23.2-20261120-UNOFFICIAL-a9y18qlte.zip",
-        "os_sdk_level": 36
+        "os_sdk_level": 36,
+        "os_patch_level": "2026-11-01"
       }
     ]
   },
