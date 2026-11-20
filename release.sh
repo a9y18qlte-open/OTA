@@ -204,10 +204,10 @@ if [ -n "$VENDOR_HASH" ]; then
 fi
 
 # Changelog since the previous published (non-draft) release of this feed (its notes link the full SHAs)
-PREV_TAG=$(gh release list -R "$REPO" -L 50 --json tagName,isDraft -q '.[] | select(.isDraft | not) | .tagName' 2>/dev/null |
+PREV_TAG=$(gh api "repos/$REPO/releases?per_page=50" -q '.[] | select(.draft | not) | .tag_name' 2>/dev/null |
 	grep -E "^$FEED-[0-9]{8}" | grep -vxF "$TAG" | head -n 1 || true)
 PREV_NOTES=""
-[ -n "$PREV_TAG" ] && PREV_NOTES=$(gh release view "$PREV_TAG" -R "$REPO" --json body -q .body 2>/dev/null || true)
+[ -n "$PREV_TAG" ] && PREV_NOTES=$(gh api "repos/$REPO/releases/tags/$PREV_TAG" -q .body 2>/dev/null || true)
 
 changelog() { # <title> <repo dir> <github repo name> <new full sha>
 	local old log
