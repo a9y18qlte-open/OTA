@@ -135,8 +135,9 @@ import json, sys
 data = json.load(open('$JSON_FILE'))
 target_ver = '$CUR_VER'
 zip_id = '$ZIP_SHA'
-for b in data.get('response', []):
-    if b.get('version') == target_ver and b.get('id') != zip_id:
+for b in (data.get('response', []) if isinstance(data, dict) else data):
+    f0 = b['files'][0] if 'files' in b else b
+    if b.get('version') == target_ver and f0.get('id', f0.get('sha256')) != zip_id:
         sys.exit(1)
 sys.exit(0)
 " 2>/dev/null; then

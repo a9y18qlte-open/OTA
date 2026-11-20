@@ -59,14 +59,46 @@ def main():
     if os.path.exists(json_path):
         with open(json_path) as f:
             data = json.load(f)
-    builds = [b for b in data['response'] if b['id'] != entry['id']]
-    builds.append(entry)
-    builds.sort(key=lambda b: b['datetime'], reverse=True)
-    data['response'] = builds
+    old = data['response'] if isinstance(data, dict) else data
+
+    if int(version.split('.')[0]) < 23:
+        builds = [b for b in old if b['id'] != entry['id']]
+        builds.append(entry)
+        builds.sort(key=lambda b: b['datetime'], reverse=True)
+        out = {'response': builds}
+    else:
+        # The Kotlin Updater (23+) reads the API v2 shape: a bare array, and
+        # drops builds whose os_sdk_level is below the device's.
+        sdk = int(props['post-sdk-level'])
+        new = {
+            'datetime': datetime,
+            'type': romtype,
+            'version': entry['version'],
+            'files': [{
+                'filename': filename,
+                'sha256': entry['id'],
+                'size': entry['size'],
+                'url': url,
+                'os_sdk_level': sdk,
+                'os_patch_level': props.get('post-security-patch-level'),
+            }],
+        }
+        builds = []
+        for b in old:
+            if 'files' not in b:
+                b = {'datetime': b['datetime'], 'type': b['romtype'], 'version': b['version'],
+                     'files': [{'filename': b['filename'], 'sha256': b['id'], 'size': b['size'],
+                                'url': b['url'], 'os_sdk_level': sdk}]}
+            if b['files'][0]['sha256'] != entry['id']:
+                builds.append(b)
+        builds.append(new)
+        builds.sort(key=lambda b: b['datetime'], reverse=True)
+        out = builds
+        entry = new
 
     os.makedirs(os.path.dirname(os.path.abspath(json_path)), exist_ok=True)
     with open(json_path, 'w') as f:
-        json.dump(data, f, indent=2)
+        json.dump(out, f, indent=2)
         f.write('\n')
     print(json.dumps(entry, indent=2))
 
