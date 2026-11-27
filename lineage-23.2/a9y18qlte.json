@@ -1,5 +1,20 @@
 [
   {
+    "datetime": 1795780729,
+    "type": "UNOFFICIAL",
+    "version": "23.2.f2feb76",
+    "files": [
+      {
+        "filename": "lineage-23.2-20261127-UNOFFICIAL-a9y18qlte.zip",
+        "sha256": "19861d8c1d2767831562210d3ce6f4a66669b318de3fd024b000a4718dc10a9c",
+        "size": 1146211938,
+        "url": "https://github.com/a9y18qlte-open/OTA/releases/download/lineage-23.2-20261127-f2feb76/lineage-23.2-20261127-UNOFFICIAL-a9y18qlte.zip",
+        "os_sdk_level": 36,
+        "os_patch_level": "2026-11-01"
+      }
+    ]
+  },
+  {
     "datetime": 1795695542,
     "type": "UNOFFICIAL",
     "version": "23.2.954d3b9",
